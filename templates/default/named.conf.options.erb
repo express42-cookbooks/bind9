@@ -12,7 +12,9 @@ options {
 
   <% end %>
     allow-recursion {
-      <%= node[:bind9][:allow_recursion] %>;
+      <%- node[:bind9][:allow_recursion].each do |e| %>
+        <%= e %>;
+      <%- end %>
     };
 
     allow-transfer {
