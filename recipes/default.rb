@@ -80,7 +80,7 @@ search(:zones).each do |zone|
     mode 0644
     notifies :restart, resources(:service => "bind9")
     variables({
-      :serial => Time.new.strftime("%Y%m%d%H%M%S")
+      :serial => Time.new.strftime("%Y%m%d%H")
     })
     action :nothing
   end
