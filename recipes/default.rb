@@ -48,29 +48,24 @@ template node[:bind9][:options_file] do
   notifies :restart, resources(:service => "bind9")
 end
 
+zonefiles = data_bag(:zones).map do |zone|
+  data_bag_item(:zones, zone)
+end
+
 template node[:bind9][:local_file] do
   source "named.conf.local.erb"
   owner "root"
   group "root"
   mode 0644
   variables({
-    :zonefiles => search(:zones)
+    :zonefiles => zonefiles
   })
   notifies :restart, resources(:service => "bind9")
 end
 
 
-search(:zones).each do |zone|
-  unless zone['autodomain'].nil? || zone['autodomain'] == ''
-    search(:node, "domain:#{zone['autodomain']}").each do |host|
-      next if host['ipaddress'] == '' || host['ipaddress'].nil?
-      zone['zone_info']['records'].push( {
-        "name" => host['hostname'],
-        "type" => "A",
-        "ip" => host['ipaddress']
-      })
-    end
-  end
+data_bag(:zones).each do |zone_name|
+  zone = data_bag_item(:zones, zone_name)
 
   template "#{node[:bind9][:config_path]}/#{zone['domain']}" do
     source "#{node[:bind9][:config_path]}/#{zone['domain']}.erb"
